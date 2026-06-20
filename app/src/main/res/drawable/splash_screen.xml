@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Gradient background -->
+    <item android:drawable="@drawable/splash_gradient" />
+    <!-- V logo centered -->
+    <item
+        android:width="188dp"
+        android:height="188dp"
+        android:gravity="center"
+        android:drawable="@drawable/splash_logo" />
+</layer-list>

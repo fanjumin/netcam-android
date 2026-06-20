@@ -1,0 +1,25 @@
+# Build
+*.apk
+*.apk.*
+.gradle/
+build/
+.kotlin/
+local.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Env
+.env
+
+# Source images
+images/
+
+# Temp processing artifacts
+app/src/main/ic_*
+app/src/drawable-nodpi/
+
+# Captures
+captures/

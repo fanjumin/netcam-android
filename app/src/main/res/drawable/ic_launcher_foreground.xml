@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- V shape -->
+    <path android:fillColor="#FFFFFF" android:pathData="M30,34l24,36l24,-36l-8,0l-16,24l-16,-24z"/>
+    <!-- Camera lens circle -->
+    <path android:fillColor="#FFFFFF" android:pathData="M54,46m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0z"/>
+    <path android:fillColor="#7C4DFF" android:pathData="M54,46m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0z"/>
+    <!-- Signal wave left -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="2" android:fillColor="#00000000"
+        android:pathData="M22,30c0,0 -8,12 -8,24s8,24 8,24"/>
+    <!-- Signal wave right -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="2" android:fillColor="#00000000"
+        android:pathData="M86,30c0,0 8,12 8,24s-8,24 -8,24"/>
+</vector>
