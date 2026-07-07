@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
-        private val RESOLUTIONS = listOf("1920x1080", "1280x720", "864x480", "640x480", "320x240")
+        private val RESOLUTIONS = listOf("3840x2160", "1920x1080", "1280x720", "864x480", "640x480", "320x240")
     }
 
     private var cameraService: CameraService? = null
@@ -603,7 +603,7 @@ fun MainScreen(
             resolution = resolution, onResolutionChange = { v ->
                 resolution = v; scope.launch(Dispatchers.IO) { settingsStore.setVideoResolution(v) }; applyAllSettings()
             },
-            resolutions = listOf("1920x1080", "1280x720", "864x480", "640x480", "320x240"),
+            resolutions = listOf("3840x2160", "1920x1080", "1280x720", "864x480", "640x480", "320x240"),
             jpegQuality = jpegQuality, onJpegQualityChange = { v ->
                 jpegQuality = v; scope.launch(Dispatchers.IO) { settingsStore.setJpegQuality(v) }; applyAllSettings()
             },
@@ -809,7 +809,7 @@ fun StartStopButton(isRunning: Boolean, onStart: () -> Unit, onStop: () -> Unit)
 @Composable
 fun SettingsScreen(
     resolution: String, onResolutionChange: (String) -> Unit,
-    resolutions: List<String> = listOf("1920x1080", "1280x720", "864x480", "640x480", "320x240"),
+    resolutions: List<String> = listOf("3840x2160", "1920x1080", "1280x720", "864x480", "640x480", "320x240"),
     jpegQuality: Int, onJpegQualityChange: (Int) -> Unit,
     fps: Int, onFpsChange: (Int) -> Unit,
     mirrorEnabled: Boolean, onMirrorChange: (Boolean) -> Unit,

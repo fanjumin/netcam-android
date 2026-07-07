@@ -312,7 +312,7 @@ setInterval(updateStatus,5000);updateStatus();
      *   POST /api/fps?value=5-30
      *   POST /api/exposure?value=-3.0-3.0
      *   POST /api/white_balance?mode=auto|sunny|cloudy|fluorescent|incandescent
-     *   POST /api/resolution?value=3840x2160|1920x1080|1280x720|864x480|640x480|320x240
+     *   POST /api/resolution?value=1920x1080|1280x720|864x480|640x480|320x240
      */
     private fun handleCameraApi(uri: String, session: IHTTPSession): Response {
         val params = session.parms ?: emptyMap()
@@ -328,12 +328,12 @@ setInterval(updateStatus,5000);updateStatus();
                     jsonOk("switched to $facing camera")
                 }
                 "torch" -> {
-                    val on = params["on"]?.let { it == "true" || it == "1" || it == "yes" } ?: true
+                    val on = params["on"]?.toBooleanOrNull() ?: true
                     service.enqueueCommand("flashEnabled", on)
                     jsonOk("torch ${if (on) "on" else "off"}")
                 }
                 "mirror" -> {
-                    val enabled = params["enabled"]?.let { it == "true" || it == "1" || it == "yes" } ?: true
+                    val enabled = params["enabled"]?.toBooleanOrNull() ?: true
                     service.enqueueCommand("mirrorEnabled", enabled)
                     jsonOk("mirror ${if (enabled) "enabled" else "disabled"}")
                 }

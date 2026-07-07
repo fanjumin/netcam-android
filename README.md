@@ -18,7 +18,7 @@ Turn your Android phone into a **WiFi IP camera + environmental sensor server**.
 - Digital zoom (1x–8x)
 - Flash/torch toggle
 - Mirror flip
-- Resolution select: 1920×1080 / 1280×720 / 864×480 / 640×480 / 320×240
+- Resolution select: 3840×2160 / 1920×1080 / 1280×720 / 864×480 / 640×480 / 320×240
 - JPEG quality 1–100, FPS 5–30
 - All controllable via **Web UI** or **HTTP API**
 
@@ -57,7 +57,7 @@ All camera functions available via REST API:
 | `POST /api/zoom?value=1.0-8.0` | Zoom level |
 | `POST /api/quality?value=1-100` | JPEG quality |
 | `POST /api/fps?value=5-30` | Frame rate |
-| `POST /api/resolution?value=WxH` | Resolution |
+| `POST /api/resolution?value=WxH` | 3840×2160 / 1920×1080 / ... |
 | `POST /api/exposure?value=-3.0-3.0` | Exposure compensation |
 | `POST /api/white_balance?mode=auto\|sunny\|...` | White balance |
 | `GET /status` | Server status JSON |

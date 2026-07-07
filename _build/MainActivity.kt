@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
-        private val RESOLUTIONS = listOf("3840x2160", "1920x1080", "1280x720", "864x480", "640x480", "320x240")
+        private val RESOLUTIONS = listOf("1920x1080", "1280x720", "864x480", "640x480", "320x240")
     }
 
     private var cameraService: CameraService? = null
@@ -86,8 +86,8 @@ class MainActivity : ComponentActivity() {
     private var currentMotionSensitivity = 30
     private var currentZoom = 1.0f
 
-    // Sensor overlay — lazy init to avoid crash before onCreate()
-    private val sensorCollector: SensorCollector by lazy { SensorCollector(this) }
+    // Sensor overlay
+    private val sensorCollector = SensorCollector(this)
     private var sensorData = SensorData()
 
     // Motion detection state
@@ -215,7 +215,7 @@ class MainActivity : ComponentActivity() {
         currentMotionSensitivity = (s["motionSensitivity"] as? Int ?: 30).coerceIn(1, 100)
         currentZoom = (s["zoomLevel"] as? Float ?: 1.0f).coerceIn(1.0f, 8.0f)
 
-        if (needsRestart && permissionsGranted && savedHolder?.surface?.isValid() == true) {
+        if (needsRestart && permissionsGranted && savedHolder != null) {
             savedHolder?.let { startCamera(it) }
         } else if (currentFlash) {
             try {
@@ -301,7 +301,7 @@ class MainActivity : ComponentActivity() {
             cam.setPreviewCallback { data, _ ->
                 try {
                     // Poll remote commands from HTTP API queue
-                    val svc = CameraService.getInstance()
+                    val svc = cameraService
                     if (svc != null) {
                         var cmd = svc.commandQueue.poll()
                         while (cmd != null) {
@@ -333,7 +333,7 @@ class MainActivity : ComponentActivity() {
                     // Watermark (free version)
                     if (!License.IS_PRO) jpeg = addWatermark(jpeg)
 
-                    CameraService.getInstance()?.broadcastFrame(jpeg)
+                    cameraService?.broadcastFrame(jpeg)
                 } catch (e: Exception) {
                     Log.e(TAG, "Frame: ${e.message}")
                 }
@@ -417,15 +417,12 @@ class MainActivity : ComponentActivity() {
         try {
             val sd = sensorCollector.sensorData.value
             val bmp = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.size) ?: return jpeg
-            val w = bmp.width; val h = bmp.height
-            val mutable = bmp.copy(Bitmap.Config.ARGB_8888, true)
-            bmp.recycle()
-            val canvas = Canvas(mutable)
+            val canvas = Canvas(bmp)
             val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
 
             // Top-left: timestamp + battery
             val tsPaint = Paint().apply {
-                color = android.graphics.Color.WHITE; textSize = w * 0.035f
+                color = android.graphics.Color.WHITE; textSize = bmp.width * 0.035f
                 isAntiAlias = true; alpha = 200
                 setShadowLayer(2f, 1f, 1f, android.graphics.Color.BLACK)
             }
@@ -436,7 +433,7 @@ class MainActivity : ComponentActivity() {
             if (sd.light > 0 || sd.temperature > 0) {
                 val sensorPaint = Paint().apply {
                     color = android.graphics.Color.argb(200, 100, 255, 100)
-                    textSize = w * 0.03f; isAntiAlias = true
+                    textSize = bmp.width * 0.03f; isAntiAlias = true
                     setShadowLayer(2f, 1f, 1f, android.graphics.Color.BLACK)
                 }
                 val sensorInfo = buildString {
@@ -447,7 +444,7 @@ class MainActivity : ComponentActivity() {
                 }
                 if (sensorInfo.isNotBlank()) {
                     canvas.drawText(sensorInfo.trimEnd(),
-                        w - 8f - Paint().apply { textSize = w * 0.03f }.measureText(sensorInfo.trimEnd()),
+                        bmp.width - 8f - Paint().apply { textSize = bmp.width * 0.03f }.measureText(sensorInfo.trimEnd()),
                         tsPaint.textSize + 4f, sensorPaint)
                 }
             }
@@ -455,35 +452,32 @@ class MainActivity : ComponentActivity() {
             // Bottom-left: resolution + fps
             val infoPaint = Paint().apply {
                 color = android.graphics.Color.argb(180, 200, 200, 200)
-                textSize = w * 0.03f; isAntiAlias = true
+                textSize = bmp.width * 0.03f; isAntiAlias = true
                 setShadowLayer(2f, 1f, 1f, android.graphics.Color.BLACK)
             }
             val info = "${previewW}x${previewH} @${currentFps}fps"
-            canvas.drawText(info, 8f, h - 8f, infoPaint)
+            canvas.drawText(info, 8f, bmp.height - 8f, infoPaint)
 
             val out = java.io.ByteArrayOutputStream()
-            mutable.compress(Bitmap.CompressFormat.JPEG, currentJpegQuality, out)
-            mutable.recycle()
+            bmp.compress(Bitmap.CompressFormat.JPEG, currentJpegQuality, out)
+            bmp.recycle()
             return out.toByteArray()
         } catch (_: Exception) { return jpeg }
     }
 
     private fun addWatermark(bytes: ByteArray): ByteArray {
         val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return bytes
-        val w = bmp.width; val h = bmp.height
-        val mutable = bmp.copy(Bitmap.Config.ARGB_8888, true)
-        bmp.recycle()
-        val canvas = Canvas(mutable)
+        val canvas = Canvas(bmp)
         val paint = Paint().apply {
-            color = android.graphics.Color.WHITE; textSize = w * 0.04f
+            color = android.graphics.Color.WHITE; textSize = bmp.width * 0.04f
             isAntiAlias = true; alpha = 180
             setShadowLayer(2f, 1f, 1f, android.graphics.Color.BLACK)
         }
         canvas.drawText(License.WATERMARK_TEXT,
-            w - paint.measureText(License.WATERMARK_TEXT) - 8f, h - 8f, paint)
+            bmp.width - paint.measureText(License.WATERMARK_TEXT) - 8f, bmp.height - 8f, paint)
         val out = java.io.ByteArrayOutputStream()
-        mutable.compress(Bitmap.CompressFormat.JPEG, currentJpegQuality, out)
-        mutable.recycle()
+        bmp.compress(Bitmap.CompressFormat.JPEG, currentJpegQuality, out)
+        bmp.recycle()
         return out.toByteArray()
     }
 
@@ -606,7 +600,7 @@ fun MainScreen(
             resolution = resolution, onResolutionChange = { v ->
                 resolution = v; scope.launch(Dispatchers.IO) { settingsStore.setVideoResolution(v) }; applyAllSettings()
             },
-            resolutions = listOf("3840x2160", "1920x1080", "1280x720", "864x480", "640x480", "320x240"),
+            resolutions = listOf("1920x1080", "1280x720", "864x480", "640x480", "320x240"),
             jpegQuality = jpegQuality, onJpegQualityChange = { v ->
                 jpegQuality = v; scope.launch(Dispatchers.IO) { settingsStore.setJpegQuality(v) }; applyAllSettings()
             },
@@ -812,7 +806,7 @@ fun StartStopButton(isRunning: Boolean, onStart: () -> Unit, onStop: () -> Unit)
 @Composable
 fun SettingsScreen(
     resolution: String, onResolutionChange: (String) -> Unit,
-    resolutions: List<String> = listOf("3840x2160", "1920x1080", "1280x720", "864x480", "640x480", "320x240"),
+    resolutions: List<String> = listOf("1920x1080", "1280x720", "864x480", "640x480", "320x240"),
     jpegQuality: Int, onJpegQualityChange: (Int) -> Unit,
     fps: Int, onFpsChange: (Int) -> Unit,
     mirrorEnabled: Boolean, onMirrorChange: (Boolean) -> Unit,
