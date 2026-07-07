@@ -16,6 +16,8 @@ import android.graphics.Rect
 import android.graphics.YuvImage
 import android.hardware.Camera
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -70,6 +72,7 @@ class MainActivity : ComponentActivity() {
     private var cameraService: CameraService? = null
     private var isBound = false
     private var permissionsGranted = false
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     // Camera managed in Activity scope
     private var previewCamera: Camera? = null
@@ -305,7 +308,7 @@ class MainActivity : ComponentActivity() {
                     if (svc != null) {
                         var cmd = svc.commandQueue.poll()
                         while (cmd != null) {
-                            applyCameraSettings(cmd)
+                            mainHandler.post { applyCameraSettings(cmd) }
                             cmd = svc.commandQueue.poll()
                         }
                     }
@@ -546,6 +549,21 @@ fun MainScreen(
     var rtspPort by remember { mutableIntStateOf(8554) }
     var serverIp by remember { mutableStateOf("") }
 
+    // Apply settings to camera when they change
+    fun applyAllSettings() {
+        onCameraSettingsChanged(mapOf(
+            "resolution" to resolution,
+            "jpegQuality" to jpegQuality,
+            "fps" to fps,
+            "cameraFacing" to cameraFacing,
+            "mirrorEnabled" to mirrorEnabled,
+            "flashEnabled" to flashEnabled,
+            "motionDetection" to motionEnabled,
+            "motionSensitivity" to motionSensitivity,
+            "zoomLevel" to zoomLevel
+        ))
+    }
+
     // Load settings
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -563,21 +581,8 @@ fun MainScreen(
             licenseKey = settingsStore.getLicenseKey()
             flashEnabled = settingsStore.getFlashEnabled()
         }
-    }
-
-    // Apply settings to camera when they change
-    fun applyAllSettings() {
-        onCameraSettingsChanged(mapOf(
-            "resolution" to resolution,
-            "jpegQuality" to jpegQuality,
-            "fps" to fps,
-            "cameraFacing" to cameraFacing,
-            "mirrorEnabled" to mirrorEnabled,
-            "flashEnabled" to flashEnabled,
-            "motionDetection" to motionEnabled,
-            "motionSensitivity" to motionSensitivity,
-            "zoomLevel" to zoomLevel
-        ))
+        // Reconcile saved settings with current camera state
+        applyAllSettings()
     }
 
     // Server status poll
