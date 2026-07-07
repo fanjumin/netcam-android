@@ -105,4 +105,9 @@ class SettingsStore(private val context: Context) {
     suspend fun getMotionSensitivity(): Int = motionSensitivity.first()
     suspend fun getZoomLevel(): Float = zoomLevel.first()
     suspend fun getCameraFacing(): Int = cameraFacing.first()
+
+    suspend fun getPlatformUrl(): String = context.dataStore.data.first()[stringPreferencesKey("platform_url")] ?: ""
+    suspend fun setPlatformUrl(url: String) { context.dataStore.edit { it[stringPreferencesKey("platform_url")] = url } }
+    suspend fun getLicenseKey(): String = context.dataStore.data.first()[stringPreferencesKey("license_key")] ?: ""
+    suspend fun setLicenseKey(key: String) { context.dataStore.edit { it[stringPreferencesKey("license_key")] = key } }
 }

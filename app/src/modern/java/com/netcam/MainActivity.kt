@@ -417,15 +417,12 @@ class MainActivity : ComponentActivity() {
         try {
             val sd = sensorCollector.sensorData.value
             val bmp = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.size) ?: return jpeg
-            val w = bmp.width; val h = bmp.height
-            val mutable = bmp.copy(Bitmap.Config.ARGB_8888, true)
-            bmp.recycle()
-            val canvas = Canvas(mutable)
+            val canvas = Canvas(bmp)
             val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
 
             // Top-left: timestamp + battery
             val tsPaint = Paint().apply {
-                color = android.graphics.Color.WHITE; textSize = w * 0.035f
+                color = android.graphics.Color.WHITE; textSize = bmp.width * 0.035f
                 isAntiAlias = true; alpha = 200
                 setShadowLayer(2f, 1f, 1f, android.graphics.Color.BLACK)
             }
@@ -436,7 +433,7 @@ class MainActivity : ComponentActivity() {
             if (sd.light > 0 || sd.temperature > 0) {
                 val sensorPaint = Paint().apply {
                     color = android.graphics.Color.argb(200, 100, 255, 100)
-                    textSize = w * 0.03f; isAntiAlias = true
+                    textSize = bmp.width * 0.03f; isAntiAlias = true
                     setShadowLayer(2f, 1f, 1f, android.graphics.Color.BLACK)
                 }
                 val sensorInfo = buildString {
@@ -447,7 +444,7 @@ class MainActivity : ComponentActivity() {
                 }
                 if (sensorInfo.isNotBlank()) {
                     canvas.drawText(sensorInfo.trimEnd(),
-                        w - 8f - Paint().apply { textSize = w * 0.03f }.measureText(sensorInfo.trimEnd()),
+                        bmp.width - 8f - Paint().apply { textSize = bmp.width * 0.03f }.measureText(sensorInfo.trimEnd()),
                         tsPaint.textSize + 4f, sensorPaint)
                 }
             }
@@ -455,15 +452,15 @@ class MainActivity : ComponentActivity() {
             // Bottom-left: resolution + fps
             val infoPaint = Paint().apply {
                 color = android.graphics.Color.argb(180, 200, 200, 200)
-                textSize = w * 0.03f; isAntiAlias = true
+                textSize = bmp.width * 0.03f; isAntiAlias = true
                 setShadowLayer(2f, 1f, 1f, android.graphics.Color.BLACK)
             }
             val info = "${previewW}x${previewH} @${currentFps}fps"
-            canvas.drawText(info, 8f, h - 8f, infoPaint)
+            canvas.drawText(info, 8f, bmp.height - 8f, infoPaint)
 
             val out = java.io.ByteArrayOutputStream()
-            mutable.compress(Bitmap.CompressFormat.JPEG, currentJpegQuality, out)
-            mutable.recycle()
+            bmp.compress(Bitmap.CompressFormat.JPEG, currentJpegQuality, out)
+            bmp.recycle()
             return out.toByteArray()
         } catch (_: Exception) { return jpeg }
     }
@@ -475,7 +472,7 @@ class MainActivity : ComponentActivity() {
         bmp.recycle()
         val canvas = Canvas(mutable)
         val paint = Paint().apply {
-            color = android.graphics.Color.WHITE; textSize = w * 0.04f
+            color = android.graphics.Color.WHITE; textSize = bmp.width * 0.04f
             isAntiAlias = true; alpha = 180
             setShadowLayer(2f, 1f, 1f, android.graphics.Color.BLACK)
         }
